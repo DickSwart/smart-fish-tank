@@ -36,6 +36,9 @@
 #define MQTT_COLOR_LIGHT_COLOR_STATE_TEMPLATE "%s/color-light/color"
 #define MQTT_COLOR_LIGHT_COLOR_CMND_TEMPLATE "cmnd/%s/color-light/color"
 
+#define MQTT_RELAY_STATE_TEMPLATE "%s/%s/state"
+#define MQTT_RELAY_COMMAND_TEMPLATE "cmnd/%s/%s/set"
+
 #define MQTT_PAYLOAD_ON "ON"
 #define MQTT_PAYLOAD_OFF "OFF"
 
@@ -56,6 +59,18 @@
 //   LIGHT SWITCH
 ///////////////////////////////////////////////////////////////////////////
 #define LIGHT_SWITCH_PIN D7
+
+///////////////////////////////////////////////////////////////////////////
+//   RELAY MODULE
+///////////////////////////////////////////////////////////////////////////
+#define RELAY01_NAME "relay01"
+#define RELAY01_PIN D6
+
+#define RELAY02_NAME "relay02"
+#define RELAY02_PIN D5
+
+#define RELAY03_NAME "relay03"
+#define RELAY03_PIN D0
 
 ///////////////////////////////////////////////////////////////////////////
 //   Over-the-Air update (OTA)

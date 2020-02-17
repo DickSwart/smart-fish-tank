@@ -10,6 +10,7 @@
 #include "FastLED.h"
 
 #include <SwartNinjaRSW.h>
+#include <SwartNinjaSW.h>
 #include <SwartNinjaLED.h>
 
 #include "user_config.h" // Fixed user configurable options
@@ -62,7 +63,7 @@ void publishToMQTT(char *p_topic, char *p_payload, bool retain = true);
 void handleMQTTMessage(char *topic, byte *payload, unsigned int length);
 
 // variables declaration
-bool boot;
+bool boot = true;
 char MQTT_CHAR_PAYLOAD[50];
 char MQTT_PAYLOAD[8] = {0};
 char MQTT_AVAILABILITY_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(MQTT_AVAILABILITY_TOPIC_TEMPLATE) - 2] = {0};
@@ -80,6 +81,14 @@ char MQTT_COLOR_LIGHT_BRIGHTNESS_STATE_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(MQTT_C
 char MQTT_COLOR_LIGHT_BRIGHTNESS_CMND_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(MQTT_COLOR_LIGHT_BRIGHTNESS_CMND_TEMPLATE) - 2] = {0};
 char MQTT_COLOR_LIGHT_COLOR_STATE_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(MQTT_COLOR_LIGHT_COLOR_STATE_TEMPLATE) - 2] = {0};
 char MQTT_COLOR_LIGHT_COLOR_CMND_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(MQTT_COLOR_LIGHT_COLOR_CMND_TEMPLATE) - 2] = {0};
+
+// relay module [size of chip id + size of relay name + size of template - size of template place hold characters ("%s")]
+char MQTT_RELAY01_STATE_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(RELAY01_NAME) + sizeof(MQTT_RELAY_STATE_TEMPLATE) - 4] = {0};
+char MQTT_RELAY01_COMMAND_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(RELAY01_NAME) + sizeof(MQTT_RELAY_COMMAND_TEMPLATE) - 4] = {0};
+char MQTT_RELAY02_STATE_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(RELAY02_NAME) + sizeof(MQTT_RELAY_STATE_TEMPLATE) - 4] = {0};
+char MQTT_RELAY02_COMMAND_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(RELAY02_NAME) + sizeof(MQTT_RELAY_COMMAND_TEMPLATE) - 4] = {0};
+char MQTT_RELAY03_STATE_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(RELAY02_NAME) + sizeof(MQTT_RELAY_STATE_TEMPLATE) - 4] = {0};
+char MQTT_RELAY03_COMMAND_TOPIC[sizeof(ESP_CHIP_ID) + sizeof(RELAY02_NAME) + sizeof(MQTT_RELAY_COMMAND_TEMPLATE) - 4] = {0};
 
 // Initialize the mqtt mqttClient object
 PubSubClient mqttClient(wifiClient);
@@ -122,6 +131,17 @@ void handleSwartNinjaSensorUpdate(char *value, int pin, const char *event);
 SwartNinjaRSW lightSwitch(LIGHT_SWITCH_PIN, handleSwartNinjaSensorUpdate, false);
 
 ///////////////////////////////////////////////////////////////////////////
+//  SwartNinjaSW
+///////////////////////////////////////////////////////////////////////////
+// Initialise the relay module
+SwartNinjaSW relay01(RELAY01_PIN);
+SwartNinjaSW relay02(RELAY02_PIN);
+SwartNinjaSW relay03(RELAY03_PIN);
+
+// add relays to an array
+SwartNinjaSW relayModule[3] = {relay01, relay02, relay03};
+
+///////////////////////////////////////////////////////////////////////////
 //   SimpleTimer
 ///////////////////////////////////////////////////////////////////////////
 SimpleTimer timer;
@@ -134,8 +154,9 @@ void setup()
 {
   Serial.begin(115200);
 
-  boot == true;
-  // Set the chip ID
+  boot = true;
+
+  // set the chip ID
   sprintf(ESP_CHIP_ID, "%06X", ESP.getChipId());
 
   // WIFI
@@ -161,6 +182,12 @@ void setup()
   // setup color light
   FastLED.addLeds<COLOR_LIGHT_LED_TYPE, COLOR_LIGHT_PIN, COLOR_LIGHT_COLOR_ORDER>(colorLight, COLOR_LIGHT_NUM_LEDS);
   FastLED.setDither(0);
+
+  // relay module
+  for (unsigned int i = 0; i < sizeof(relayModule) / sizeof(relayModule[0]); i++)
+  {
+    relayModule[i].setup();
+  }
 
   timer.setInterval(120000, checkInMQTT);
 }
@@ -412,6 +439,32 @@ void setupMQTT()
   Serial.println(MQTT_COLOR_LIGHT_COLOR_CMND_TOPIC);
   Serial.println("---------------------------------------------------------------------------");
 
+  sprintf(MQTT_RELAY01_STATE_TOPIC, MQTT_RELAY_STATE_TEMPLATE, ESP_CHIP_ID, RELAY01_NAME);
+  Serial.print(F("[MQTT]: MQTT relay01 State topic: "));
+  Serial.println(MQTT_RELAY01_STATE_TOPIC);
+
+  sprintf(MQTT_RELAY01_COMMAND_TOPIC, MQTT_RELAY_COMMAND_TEMPLATE, ESP_CHIP_ID, RELAY01_NAME);
+  Serial.print(F("[MQTT]: MQTT relay01 Command topic: "));
+  Serial.println(MQTT_RELAY01_COMMAND_TOPIC);
+
+  sprintf(MQTT_RELAY02_STATE_TOPIC, MQTT_RELAY_STATE_TEMPLATE, ESP_CHIP_ID, RELAY02_NAME);
+  Serial.print(F("[MQTT]: MQTT relay02 State topic: "));
+  Serial.println(MQTT_RELAY02_STATE_TOPIC);
+
+  sprintf(MQTT_RELAY02_COMMAND_TOPIC, MQTT_RELAY_COMMAND_TEMPLATE, ESP_CHIP_ID, RELAY02_NAME);
+  Serial.print(F("[MQTT]: MQTT relay02 Command topic: "));
+  Serial.println(MQTT_RELAY02_COMMAND_TOPIC);
+
+  sprintf(MQTT_RELAY03_STATE_TOPIC, MQTT_RELAY_STATE_TEMPLATE, ESP_CHIP_ID, RELAY03_NAME);
+  Serial.print(F("[MQTT]: MQTT relay03 State topic: "));
+  Serial.println(MQTT_RELAY03_STATE_TOPIC);
+
+  sprintf(MQTT_RELAY03_COMMAND_TOPIC, MQTT_RELAY_COMMAND_TEMPLATE, ESP_CHIP_ID, RELAY03_NAME);
+  Serial.print(F("[MQTT]: MQTT relay03 Command topic: "));
+  Serial.println(MQTT_RELAY03_COMMAND_TOPIC);
+
+  Serial.println("---------------------------------------------------------------------------");
+
   mqttClient.setServer(MQTT_SERVER, MQTT_SERVER_PORT);
   mqttClient.setCallback(handleMQTTMessage);
 }
@@ -474,6 +527,25 @@ void handleMQTTMessage(char *topic, byte *payload, unsigned int length)
     current_green = green;
     current_blue = blue;
   }
+  else if (String(MQTT_RELAY01_COMMAND_TOPIC).equals(newTopic)) {
+    if (relay01.setState(newPayload.equalsIgnoreCase(MQTT_PAYLOAD_ON)))
+    {
+      publishToMQTT(MQTT_RELAY01_STATE_TOPIC, relay01.getState());
+    }
+  }
+  else if (String(MQTT_RELAY02_COMMAND_TOPIC).equals(newTopic)) {
+    if (relay02.setState(newPayload.equalsIgnoreCase(MQTT_PAYLOAD_ON)))
+    {
+      publishToMQTT(MQTT_RELAY02_STATE_TOPIC, relay02.getState());
+    }
+  }
+  else if (String(MQTT_RELAY03_COMMAND_TOPIC).equals(newTopic)) {
+    if (relay03.setState(newPayload.equalsIgnoreCase(MQTT_PAYLOAD_ON)))
+    {
+      publishToMQTT(MQTT_RELAY03_STATE_TOPIC, relay03.getState());
+    }
+  }
+
 }
 
 /*
@@ -493,14 +565,14 @@ void connectToMQTT()
 
         Serial.println(F("[MQTT]: The mqttClient is successfully connected to the MQTT broker"));
         publishToMQTT(MQTT_AVAILABILITY_TOPIC, "online");
-        if (boot == false)
-        {
-          Serial.println(F("[MQTT]: Reconnected"));
-        }
-        if (boot == true)
+        if (boot)
         {
           Serial.println(F("[MQTT]: Rebooted"));
-          boot == false;
+          boot = false;
+        }
+        else
+        {
+          Serial.println(F("[MQTT]: Reconnected"));
         }
 
         // publish messages
@@ -513,11 +585,13 @@ void connectToMQTT()
         subscribeToMQTT(MQTT_COLOR_LIGHT_POWER_CMND_TOPIC);
         subscribeToMQTT(MQTT_COLOR_LIGHT_COLOR_CMND_TOPIC);
         subscribeToMQTT(MQTT_COLOR_LIGHT_BRIGHTNESS_CMND_TOPIC);
+        subscribeToMQTT(MQTT_RELAY01_COMMAND_TOPIC);
+        subscribeToMQTT(MQTT_RELAY02_COMMAND_TOPIC);
+        subscribeToMQTT(MQTT_RELAY03_COMMAND_TOPIC);
       }
       else
       {
         retries++;
-#ifdef DEBUG
         Serial.println(F("[MQTT]: ERROR - The connection to the MQTT broker failed"));
         Serial.print(F("[MQTT]: MQTT username: "));
         Serial.println(MQTT_USERNAME);
@@ -527,7 +601,6 @@ void connectToMQTT()
         Serial.println(MQTT_SERVER);
         Serial.print(F("[MQTT]: Retries: "));
         Serial.println(retries);
-#endif
         // Wait 5 seconds before retrying
         delay(5000);
       }
