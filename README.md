@@ -5,6 +5,7 @@
 </p>
 
 ## Parts Used
+---
 - 1 x N-Channel MOSFET (IRF530N)
 - 1 x NodeMCU V3.0
 - 2 x Bi-Directional Logic Level Converter (JY-MCU)
@@ -17,11 +18,13 @@
 - Header Wires
 
 ## Fritzing Sketch
+---
 <p align="center">
-  <img src="/extras/FritzingSketch.jpg">
+  <img src="/assits/images/fritzing-breadboard.jpg">
 </p>
 
 ## Wiring
+---
 
 ### Logic Shifter 1 - 5v Side
 | Wire |  Pin | Destination | Destination Pin |
@@ -84,3 +87,10 @@ _* numbering starts from next to the GND incrementing from left to right pin as 
 | White | Color LED - GND |
 | Orange | Switch |
 | Blue | Switch |
+
+## Photo
+---
+More photos and other assets available in the assits folder.
+<p align="center">
+  <img src="/assits/images/project/IMG_0656.jpg">
+</p>
