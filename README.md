@@ -5,66 +5,65 @@
 </p>
 
 ## Parts Used
-- N-Channel MOSFET (IRF530N)
-- NodeMCU V3.0
-- Bi-Directional Logic Level Converter (JY-MCU)
-- 12v to 5v Step Down
-- 12V 6amp Power Supply
-- Digital RGB Leds
-- Project Box
+- 1 x N-Channel MOSFET (IRF530N)
+- 1 x NodeMCU V3.0
+- 2 x Bi-Directional Logic Level Converter (JY-MCU)
+- 1 x 12v to 5v Step Down
+- 1 x 12V 6amp Power Supply
+- 1 x Digital RGB Leds
+- 1 x Project Box
+- 1 x Power Jacks
+- 1 x Toggle Switch
 - Header Wires
-- Power Jacks
 
 ## Fritzing Sketch
-To Add
-
-
-## Fritzing Sketch
-_TODO!!_
+<p align="center">
+  <img src="/extras/FritzingSketch.jpg">
+</p>
 
 ## Wiring
 
-### Logic Shifter 1
-**5v Side**
+### Logic Shifter 1 - 5v Side
 | Wire |  Pin | Destination | Destination Pin |
 |---|---|---|---|
 | Green | VCC | Step down converter 5v | positive |
 | Purple | GND | Step down converter 5v | negative |
-| Blue | 1 | Relay Module | IN1 |
-| Green | 2 | Relay Module | IN2 |
-| Brown | 3 | Relay Module | IN3 |
-| Purple | 4 | Relay Module | IN4 |
+| Blue | 1<sup>*</sup> | Relay Module | IN1 |
+| Green | 2<sup>*</sup> | Relay Module | IN2 |
+| Brown | 3<sup>*</sup> | Relay Module | IN3 |
+| Purple | 4<sup>*</sup> | Relay Module | IN4 |
 
-**3.3v Side**
+### Logic Shifter 1 - 3.3v Side
 | Wire |  Pin | Destination | Destination Pin |
 |---|---|---|---|
 | Orange | VCC | NodeMCU | 3v |
 | Black | GND | NodeMCU | G |
-| Blue | 1 | NodeMCU | D5 |
-| Purple | 2 | NodeMCU | D6 |
-| Gray | 3 | NodeMCU | D0 |
-| Green | 4 | - | - |
+| Blue | 1<sup>*</sup> | NodeMCU | D6 |
+| Purple | 2<sup>*</sup> | NodeMCU | D5 |
+| Gray | 3<sup>*</sup> | NodeMCU | D0 |
+| Green | 4<sup>*</sup> | - | - |
 
-### Logic Shifter 2
-**5v Side**
+### Logic Shifter 2 - 5v Side
 | Wire |  Pin | Destination | Destination Pin |
 |---|---|---|---|
 | Green | VCC | Step down converter 5v | positive |
 | Purple | GND | Step down converter 5v | negative |
-| Brown | 1 | Terminal Block | 4 |
-| - | 2 | - | - |
-| - | 3 | - | - |
-| - | 4 | - | - |
+| Brown | 1<sup>*</sup> | Terminal Block | 4 |
+| - | 2<sup>*</sup> | - | - |
+| - | 3<sup>*</sup> | - | - |
+| - | 4<sup>*</sup> | - | - |
 
-**3.3v Side**
+### Logic Shifter 2 - 3.3v Side
 | Wire |  Pin | Destination | Destination Pin |
 |---|---|---|---|
 | Orange | VCC | NodeMCU | 3v |
 | White | GND | NodeMCU | G |
-| Orange | 1 | NodeMCU | D2 |
-| - | 2 | - | - |
-| - | 3 | - | - |
-| - | 4 | - | - |
+| Orange | 1<sup>*</sup> | NodeMCU | D2 |
+| - | 2<sup>*</sup> | - | - |
+| - | 3<sup>*</sup> | - | - |
+| - | 4<sup>*</sup> | - | - |
+
+_* numbering starts from next to the GND incrementing from left to right pin as there is no physical numbering on the board_
 
 ### Terminal Block
 | Pin | Function |
@@ -79,7 +78,7 @@ _TODO!!_
 ### Fish Tank Light Wire
 | Color | Function |
 |--|--|
-| Red | White & Color LED VCC  |
+| brown | White & Color LED VCC  |
 | Black | White LED - GND |
 | Green | Color LED - Signal |
 | White | Color LED - GND |
