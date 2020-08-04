@@ -92,5 +92,5 @@ _* numbering starts from next to the GND incrementing from left to right pin as 
 ---
 More photos and other assets available in the assits folder.
 <p align="center">
-  <img src="/assits/images/project/IMG_0656.jpg">
+  <img src="https://raw.githubusercontent.com/DickSwart/smart-fish-tank/master/assits/images/project/IMG_0656.jpg">
 </p>
